@@ -26,7 +26,7 @@ function  keep=nms(Corner,Scores,threholds)
                 xx_min=max(Xmin(j_f),Xmin(i_f));
                 yy_max=min(Ymax(j_f),Ymax(i_f));
                 yy_min=max(Ymin(j_f),Ymin(i_f));
-                
+              
                 w_f=xx_max-xx_min+1;
                 h_f=yy_max-yy_min+1;
                 covered=0;
