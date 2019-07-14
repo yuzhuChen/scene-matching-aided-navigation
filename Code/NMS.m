@@ -1,24 +1,17 @@
 %threholds 筛选阈值
 %M最大值抑制后所得峰数量
-%h,n框的大小
-%function  NMS(img_in,threholds,M,w,h)
-imgS=imread('223_5_72km_fieldSparse_analysis0413.jpg');
-imgL=imread('223_5_72km_fieldLowRank_analysis0412.jpg');
-%imgS=imread('223_223_5_8kmSparse.jpg');
-%imgL=imread('223_223_5_8kmLowRank.jpg');
-%稀疏项和低秩项的叠加点乘
-img_p=double(imgS).*double(imgL); %matlab的数据转换
-%叠加结果按列排序，求得最大值
-img_p_sort=sort(img_p(:));
-max=img_p_sort(length(img_p_sort)); 
-%叠加后的元素归一化（以最大值为分母）
-for i=1:size(img_p,1)
-    for j=1:size(img_p,2)
-        img_p(i,j)=img_p(i,j)/max; 
-    end
-end
-%叠加后的数据转化为图片格式
-img_in=uint8(img_p*255);
+%w,h框的宽高
+function   Corner_box=NMS(img_in,threholds,M,w,h)
+  p = inputParser;
+  default_threholds=0.6;
+  defaultM=5;
+  default_w=50;
+  default_h=50;
+  addRequired(p,'img_in');
+  addOptional(p,'threholds',default_threholds,@isnumeric);
+  addOptional(p,'M',defaultM,@isnumeric);
+  addOptional(p,'w',default_w,@isnumeric);
+  addOptional(p,'h',default_h,@isnumeric);
 %设定阈值，前M个峰值，框的宽和高
 threholds=0.8*255;
 M=5;
@@ -26,8 +19,6 @@ w=50;
 h=50;
 %将矩阵转换为列向量
 img_col=img_in(:);
-%求出图像列项量的逻辑矩阵
-%img_threholds=img_col>threholds;
 %取出大于阈值的元素进行降序排列
 Max_img=sort(img_col(img_col>threholds),'descend');  %erro: sort(A(:))对所有元素排序
 %选出降序排列后，前M个不相等的元素，并找到在原图片中的坐标
@@ -64,21 +55,21 @@ for i=1:size(row)
    end
    C=[C;xmin xmax ymin ymax];  
 end
-  saved=nms_01(C,s,0.6);
-  %img_show=imread('223_223_5_8km.png');
-  img_show=imread('223_5_72km_field.png');
-  imshow(img_show);
-  hold on;
+  saved=nms_01(C,s,threholds);
   Corner_box=[];
   for i=1:size(saved)
      x= C(saved(i),:)
-     Corner_box=[Corner_box;x];
-     rectx = [x(1) x(2) x(2) x(1) x(1)];
-     recty = [x(3) x(3) x(4) x(4) x(3)];
-     plot(rectx, recty, 'linewidth',2);%坐标是依据像素吗？
+     Corner_box=[Corner_box;x]; 
   end
-  
-  hold off;
-       
+    mat='.mat'; %生成的计算结果文件后缀
+    T=num2str(clock); %clock记录当前日期时间，转换成字符串形式
+    T(find(isspace(T))) =[]; %去除T中的空格 
+    Tl=length(T); %计算T的长度
+    Time=T(1:(Tl-6)); %去除T中多余的数字，得到日期和时间的紧凑形式
+    title ='Corner_box';
+    dir='D:\Users\Daisy\Documents\GitHub\scene-matching-aided-navigation\result\'; %保持文件的目录名
+    filename=strcat(dir,title,Time,mat); %生成保存文件的路径和文件名
+  % dlmwrite(filename,XYR(:,:),'delimiter','\t','newline','pc');%保存到XYR.txt文件:) 
+    save( filename,'Corner_box');     
 %end     
 
